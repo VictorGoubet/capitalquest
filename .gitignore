@@ -20,6 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.lprof/
 
 # Virtual Environment
 venv/
@@ -86,8 +87,7 @@ Desktop.ini
 # Backup files
 *.bak
 
-# Project specific
-countries.csv
+
 
 # Windows thumbnail cache files
 Thumbs.db:encryptable
