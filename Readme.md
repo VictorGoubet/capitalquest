@@ -5,21 +5,31 @@
 <h1 align="center">Capital Quest</h1>
 
 <p align="center">
-  Test your knowledge of world capitals with this interactive quiz game! 🌍🏙️
+  Test your knowledge of world capitals with this interactive quiz game! 
 </p>
 
-<p align="center">
-  <a href="#play-the-game-">Play the Game</a> •
-  <a href="#installation-for-developers-">Installation for Developers</a>
-</p>
+## Table of Contents 📙
+
+- [Play the Game](#play-the-game-)
+- [Installation for Developers](#installation-for-developers-)
+  - [Prerequisites](#prerequisites)
+  - [Option 1: Git Clone](#option-1-git-clone-)
 
 <br>
 
-## Play the Game 🎮
+## Play the Game 🌍
 
-Ready to challenge your knowledge of world capitals? 
+<p align="center">
+  Ready to test your world capital knowledge?
+</p>
 
-[Click here to play Capital Quest!](https://capital-quest.example.com) 🚀
+<p align="center">
+  <a href="https://capital-quest.example.com">
+    <button style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Play
+    </button>
+  </a>
+</p>
 
 ## Installation for Developers 🛠️
 
@@ -89,4 +99,3 @@ A Docker image is available for easy setup:
 
 ---
 
-Enjoy testing your knowledge of world capitals with Capital Quest! 🌎🏆
