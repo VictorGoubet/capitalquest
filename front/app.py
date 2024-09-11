@@ -10,10 +10,12 @@ if project_root not in sys.path:
 
 import requests
 import streamlit as st
+from dotenv import load_dotenv
 
 from api.models.country import Country
+from front.models.question import QuizQuestion
 
-from .models.question import QuizQuestion
+load_dotenv()
 
 
 class CapitalQuizGame:
