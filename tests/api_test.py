@@ -34,7 +34,7 @@ class TestCountryAPI(unittest.TestCase):
         :param MagicMock mock_get_all_countries: Mocked get_all_countries method
         """
         mock_get_all_countries.return_value = [self.mock_country]
-        response = self.client.get("/api/v1/all-countries")
+        response = self.client.get("/api/all-countries")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["data"]), 1)
         self.assertEqual(response.json()["data"][0]["name"], "Test Country")
@@ -47,7 +47,7 @@ class TestCountryAPI(unittest.TestCase):
         :param MagicMock mock_get_random_country: Mocked get_random_country method
         """
         mock_get_random_country.return_value = self.mock_country
-        response = self.client.get("/api/v1/random-country")
+        response = self.client.get("/api/random-country")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["data"]["name"], "Test Country")
 
@@ -59,7 +59,7 @@ class TestCountryAPI(unittest.TestCase):
         :param MagicMock mock_search_country: Mocked search_country method
         """
         mock_search_country.return_value = self.mock_country
-        response = self.client.get("/api/v1/search-country/TC")
+        response = self.client.get("/api/search-country/TC")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["data"]["name"], "Test Country")
 

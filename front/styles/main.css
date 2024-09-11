@@ -1,0 +1,15 @@
+
+.stTextInput div label {
+    font-size: 20px;
+    color: #00008b;
+    text-align: center;
+}
+
+h1, h2, h3 {
+    font-family: 'Comic Sans MS', cursive, sans-serif; /* Playful font */
+}
+
+p {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-size: 18px;
+}

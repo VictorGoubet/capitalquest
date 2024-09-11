@@ -1,15 +1,14 @@
 import random
 import sys
 from pathlib import Path
+from typing import Optional
 
 project_root = str(Path(__file__).resolve().parent.parent)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-
 import requests
 import streamlit as st
-from constants import API_BASE_URL
 from models.question import QuizQuestion
 
 from api.models.country import Country
@@ -20,15 +19,27 @@ class CapitalQuizGame:
     A class to manage the Capital Quiz Game using the Country Information API.
     """
 
-    def __init__(self, api_base_url: str, num_questions: int = 5):
-        self.api_base_url = api_base_url
+    def __init__(
+        self,
+        api_host: str = "0.0.0.0",
+        api_port: int = 8000,
+        num_questions: int = 5,
+    ):
+        """
+        Initialize the CapitalQuizGame.
+
+        :param str api_host: The host address of the API server. Defaults to "0.0.0.0".
+        :param int api_port: The port number of the API server. Defaults to 8000.
+        :param int num_questions: The number of questions in the quiz. Defaults to 5.
+        """
+        self.api_base_url = f"http://{api_host}:{api_port}/api"
         self.num_questions = num_questions
 
     def get_random_country(self) -> Country:
         """
         Fetch a random country from the API.
 
-        :return Country: A Country object containing information about a random country.
+        :return Country: A Country object containing the fetched country data.
         """
         response = requests.get(f"{self.api_base_url}/random-country")
         if response.status_code == 200:
@@ -41,7 +52,7 @@ class CapitalQuizGame:
         """
         Generate a question for the quiz.
 
-        :return QuizQuestion: A QuizQuestion object containing the question details.
+        :return QuizQuestion: A QuizQuestion object containing the generated question data.
         """
         question_country = self.get_random_country()
         choices = [question_country.capital]
@@ -56,7 +67,7 @@ class CapitalQuizGame:
         """
         Check if the user's answer is correct.
 
-        :param str user_answer: The user's selected answer.
+        :param str user_answer: The answer provided by the user.
         :return bool: True if the answer is correct, False otherwise.
         """
         if (
@@ -80,18 +91,31 @@ class CapitalQuizGame:
         """
         Launch and manage the game flow.
         """
-        st.set_page_config(page_title="Capital Quiz Game", page_icon="🌍")
-        st.title("🌍 Capital Quiz Game")
+        st.set_page_config(page_title="Capital Quest", page_icon="🌍", layout="wide")
+        self.load_css()  # Load external CSS
 
         if "game_state" not in st.session_state:
             self.initialize_game_state()
 
         if st.session_state.game_state == "start":
+            st.markdown("<h1 style='text-align: center;'>🌍 Capital Quest</h1>", unsafe_allow_html=True)
             self._handle_start_state()
         elif st.session_state.game_state == "playing":
             self._handle_playing_state()
         elif st.session_state.game_state == "end":
             self._handle_end_state()
+
+    def load_css(self) -> None:
+        """
+        Load custom CSS from an external file located in the styles folder.
+
+        This method reads the contents of the 'main.css' file from the 'styles' folder
+        adjacent to the current script and applies it to the Streamlit app.
+        """
+        current_dir = Path(__file__).resolve().parent
+        css_path = current_dir / "styles" / "main.css"
+        with css_path.open("r") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
     def initialize_game_state(self):
         """
@@ -108,15 +132,22 @@ class CapitalQuizGame:
         """
         Handle the start state of the game.
         """
-        st.write("Welcome to the Capital Quiz Game! Test your knowledge of world capitals.")
-        if st.button("Start Game"):
-            st.session_state.game_state = "playing"
-            st.session_state.current_quiz_question = self.generate_question()
-            st.session_state.question_number = 1
-            st.session_state.answer_submitted = False
-            st.session_state.result_message = None
-            st.session_state.score = 0
-            st.rerun()
+        st.write(
+            "<p style='text-align: center;'>Test your knowledge of world capitals.</p>",
+            unsafe_allow_html=True,
+        )
+        _, col2, _ = st.columns([1, 1, 1])
+        with col2:
+            _, inner_col, _ = st.columns([1, 2, 1])
+            with inner_col:
+                if st.button("Start Game", use_container_width=True):
+                    st.session_state.game_state = "playing"
+                    st.session_state.current_quiz_question = self.generate_question()
+                    st.session_state.question_number = 1
+                    st.session_state.answer_submitted = False
+                    st.session_state.result_message = None
+                    st.session_state.score = 0
+                    st.rerun()
 
     def _handle_playing_state(self) -> None:
         """
@@ -139,35 +170,50 @@ class CapitalQuizGame:
         if st.session_state.current_quiz_question is None:
             st.session_state.current_quiz_question = self.generate_question()
 
-        st.subheader(f"Question {st.session_state.question_number}/{self.num_questions}")
-        st.write(f"What is the capital of {st.session_state.current_quiz_question.country}?")
-
-        st.session_state.user_answer = st.radio(
-            "Select the correct capital:",
-            st.session_state.current_quiz_question.choices,
-            key=f"q{st.session_state.question_number}",
-            disabled=st.session_state.answer_submitted,
+        st.markdown(
+            f"<h3 style='text-align: center;'>Question {st.session_state.question_number}/{self.num_questions}</h3>",
+            unsafe_allow_html=True,
         )
+        st.markdown(
+            f"<p style='text-align: center;'>What is the capital of <b>{st.session_state.current_quiz_question.country}</b>?</p>",
+            unsafe_allow_html=True,
+        )
+
+        _, col2, _ = st.columns([3, 1, 3])
+        with col2:
+            st.session_state.user_answer = st.radio(
+                "Select the correct capital:",
+                st.session_state.current_quiz_question.choices,
+                key=f"q{st.session_state.question_number}",
+                disabled=st.session_state.answer_submitted,
+                label_visibility="collapsed",
+            )
 
     def _process_answer(self) -> None:
         """
         Process the user's answer and update the game state.
         """
-        submit_button = st.button("Submit Answer", disabled=st.session_state.answer_submitted)
-        if submit_button:
-            is_correct = self.check_answer(st.session_state.user_answer)
-            self._display_result(is_correct)
-            st.session_state.answer_submitted = True
-            st.session_state.show_next_button = True
-            st.rerun()
+        _, col2, _ = st.columns([1, 1, 1])
+        with col2:
+            _, col2, _ = st.columns([1, 2, 1])
+            with col2:
+                submit_button = st.button(
+                    "Submit Answer", disabled=st.session_state.answer_submitted, use_container_width=True
+                )
+                if submit_button:
+                    is_correct = self.check_answer(st.session_state.user_answer)
+                    self._display_result(is_correct)
+                    st.session_state.answer_submitted = True
+                    st.session_state.show_next_button = True
+                    st.rerun()
 
-        if st.session_state.show_next_button:
-            if st.button("Next Question"):
-                self._update_game_state()
-                st.session_state.show_next_button = False
-                st.session_state.answer_submitted = False
-                st.session_state.result_message = None
-                st.rerun()
+                if st.session_state.show_next_button:
+                    if st.button("Next Question", use_container_width=True):
+                        self._update_game_state()
+                        st.session_state.show_next_button = False
+                        st.session_state.answer_submitted = False
+                        st.session_state.result_message = None
+                        st.rerun()
 
     def _display_result(self, is_correct: bool) -> None:
         """
@@ -175,18 +221,18 @@ class CapitalQuizGame:
 
         :param bool is_correct: Whether the user's answer was correct.
         """
+        country = st.session_state.current_quiz_question.country
+        correct_answer = st.session_state.current_quiz_question.correct_answer
         if is_correct:
             st.session_state.result_message = (
-                f"✅ Correct! The capital of {st.session_state.current_quiz_question.country} "
-                f"is {st.session_state.current_quiz_question.correct_answer}."
+                f"<p style='text-align: center; color: green;'>✅ Correct! "
+                f"The capital of {country} is {correct_answer}.</p>"
             )
-            st.success(st.session_state.result_message)
         else:
             st.session_state.result_message = (
-                f"❌ Incorrect. The capital of {st.session_state.current_quiz_question.country} "
-                f"is {st.session_state.current_quiz_question.correct_answer}."
+                f"<p style='text-align: center; color: red;'>❌ Incorrect. "
+                f"The capital of {country} is {correct_answer}.</p>"
             )
-            st.error(st.session_state.result_message)
 
     def _update_game_state(self) -> None:
         """
@@ -203,28 +249,40 @@ class CapitalQuizGame:
     def _handle_end_state(self) -> None:
         """
         Handle the end state of the game.
+
+        Displays the final score, accuracy, and provides a button to return to the home screen.
         """
-        st.subheader("🎉 Quiz Completed!")
-        st.write(f"Your final score: {st.session_state.score}/{self.num_questions}")
+        st.markdown("<h2 style='text-align: center;'>🎉 Quiz Completed!</h2>", unsafe_allow_html=True)
+        st.markdown(
+            f"<p style='text-align: center; font-size: 20px;'>Your final score: <b>{st.session_state.score}/{self.num_questions}</b></p>",
+            unsafe_allow_html=True,
+        )
         accuracy = (st.session_state.score / self.num_questions) * 100
-        st.write(f"Accuracy: {accuracy:.2f}%")
+        st.markdown(f"<p style='text-align: center;'>Accuracy: <b>{accuracy:.2f}%</b></p>", unsafe_allow_html=True)
 
-        if st.button("Home"):
-            self.reset_game()
-            st.session_state.game_state = "start"
-            st.session_state.show_next_button = False
-            st.session_state.question_number = 0
-            st.session_state.answer_submitted = False
-            st.session_state.result_message = None
-            st.session_state.score = 0
-            st.rerun()
+        _, col2, _ = st.columns([1, 1, 1])
+        with col2:
+            col2.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+            if st.button("Home", use_container_width=True):
+                self.reset_game()
+                st.session_state.game_state = "start"
+                st.session_state.show_next_button = False
+                st.session_state.question_number = 0
+                st.session_state.answer_submitted = False
+                st.session_state.result_message = None
+                st.session_state.score = 0
+                st.rerun()
+            col2.markdown("</div>", unsafe_allow_html=True)
 
 
-def main() -> None:
+def main(api_host: Optional[str] = None, api_port: Optional[int] = None) -> None:
     """
     Main function to initialize and launch the Capital Quiz Game.
+
+    :param api_host: Optional host for the API. If not provided, defaults to "0.0.0.0".
+    :param api_port: Optional port for the API. If not provided, defaults to 8000.
     """
-    game = CapitalQuizGame(api_base_url=API_BASE_URL)
+    game = CapitalQuizGame(api_host=api_host or "0.0.0.0", api_port=api_port or 8000)
     game.launch()
 
 

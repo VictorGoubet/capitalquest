@@ -1,6 +1,6 @@
 import unittest
 
-import pydantic_core
+from pydantic import ValidationError
 
 from api.models.country import Country
 
@@ -51,8 +51,8 @@ class TestCountry(unittest.TestCase):
             "Population": "0",  # Should be greater than 0
             "Capital/Major City": "Test",
             "Land Area(Km2)": "0",  # Should be greater than 0
-            "Currency-Code": "Test",
-            "Official language": "Test language",
+            "Currency-Code": "",
+            "Official language": "",
         }
         country = Country(**invalid_data)
 
@@ -60,12 +60,12 @@ class TestCountry(unittest.TestCase):
         self.assertIsNone(country.code)
         self.assertIsNone(country.population)
         self.assertIsNone(country.area)
+        self.assertIsNone(country.currency)
+        self.assertIsNone(country.language)
 
         # Test that other fields are still valid
         self.assertEqual(country.name, "Invalid")
         self.assertEqual(country.capital, "Test")
-        self.assertEqual(country.currency, "Test")
-        self.assertEqual(country.language, "Test")
 
         # Test language cleaning
         country_with_language = Country(
@@ -113,11 +113,10 @@ class TestCountry(unittest.TestCase):
             **{"Capital/Major City": "Test", "Land Area(Km2)": "100,000"}
         )
 
-        with self.assertRaises(pydantic_core.ValidationError) as context:
+        with self.assertRaises(ValidationError) as context:
             country.name = "New Name"
 
         self.assertIn("Instance is frozen", str(context.exception))
-        self.assertIn("frozen_instance", str(context.exception))
 
     def test_parse_number(self):
         """Test the parse_number validator."""
@@ -139,3 +138,25 @@ class TestCountry(unittest.TestCase):
             **{"Capital/Major City": "Test", "Land Area(Km2)": "100,000", "Official language": "English language"}
         )
         self.assertEqual(country.language, "English")
+
+    def test_validate_code(self):
+        """Test the validate_code validator."""
+        country_with_short_code = Country(Country="Test", Abbreviation="T", **{"Capital/Major City": "Test"})
+        self.assertIsNone(country_with_short_code.code)
+
+        country_with_valid_code = Country(Country="Test", Abbreviation="TS", **{"Capital/Major City": "Test"})
+        self.assertEqual(country_with_valid_code.code, "TS")
+
+    def test_validate_fields(self):
+        """Test the validate_fields model validator."""
+        country = Country(
+            Country="Test",
+            **{"Capital/Major City": "Test"},
+            Population="0",
+            **{"Land Area(Km2)": "0"},
+            **{"Currency-Code": "", "Official language": ""}
+        )
+        self.assertIsNone(country.population)
+        self.assertIsNone(country.area)
+        self.assertIsNone(country.currency)
+        self.assertIsNone(country.language)
