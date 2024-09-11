@@ -8,7 +8,7 @@
 
 <p align="center">
   Test your knowledge of world capitals with this interactive quiz game!<br>
-  <a href="#play-the-game-">· Play here ·</a>
+  <a href="#play-the-game-">· Play here (soon) ·</a>
 </p>
 
 ## Table of Contents 📙
@@ -22,7 +22,7 @@
 
 ## Play the Game 🌍
 
-Play Capital Quest [here][game-url]
+Play Capital Quest [here][game-url] (soon)
 
 ## Installation for Developers 🛠️
 
@@ -37,7 +37,7 @@ If you want to run Capital Quest locally, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/capitalquest.git
+   git clone https://github.com/VictorGoubet/capitalquest.git
    cd capitalquest
    ```
 
@@ -74,22 +74,22 @@ If you want to run Capital Quest locally, follow these steps:
 
 4. Open your browser and navigate to `http://localhost:8051` (or your custom front-end port)
 
-### Option 2: Docker 🐳
+### Option 2: Docker (soon) 🐳
 
 A Docker image is available for easy setup:
 
 1. Pull the Docker image:
    ```bash
-   docker pull yourdockerhub/capitalquest:latest
+   docker pull victorgoubet/capitalquest:latest
    ```
 
 2. Run the container:
    ```bash
-   docker run -p 8051:8051 yourdockerhub/capitalquest:latest
+   docker run -p 8051:8051 victorgoubet/capitalquest:latest
    ```
 
 3. Access the game at `http://localhost:8051`
 
 ---
 
-[game-url]: https://capital-quest.example.com
+[game-url]: https://capital-quest.com
