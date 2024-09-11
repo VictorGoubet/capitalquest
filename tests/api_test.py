@@ -15,8 +15,8 @@ class TestCountryAPI(unittest.TestCase):
         """
         Set up the test client and mock data.
         """
-        self.client = TestClient(app)
-        self.mock_country = Country(
+        self.client: TestClient = TestClient(app)
+        self.mock_country: Country = Country(
             name="Test Country",
             code="TC",
             population=1000000,

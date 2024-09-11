@@ -7,7 +7,7 @@ from api.data.data_handler import DataHandler
 from api.data.instance import get_data_handler
 from api.models.country import Country
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 @router.get(
@@ -35,15 +35,15 @@ router = APIRouter()
     },
     tags=["Countries"],
 )
-async def get_random_country(data_handler: DataHandler = Depends(get_data_handler)) -> Dict[str, Any]:
+async def get_random_country(data_handler: DataHandler = Depends(get_data_handler)) -> JSONResponse:
     """
     Retrieve a random country from the database.
 
     :param DataHandler data_handler: The data handler instance (injected by FastAPI)
-    :return Dict[str, Any]: A dictionary containing a success message and information about a random  country.
+    :return JSONResponse: A JSON response containing a success message and information about a random country.
     :raises HTTPException: If no country is found in the database.
     """
-    random_country = data_handler.get_random_country()
+    random_country: Country | None = data_handler.get_random_country()
     if random_country is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=" ❌ No countries found in the database.")
 

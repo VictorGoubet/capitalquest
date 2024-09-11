@@ -1,13 +1,8 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.data.instance import get_data_handler
 from api.routes import all_countries, random_country, search_country
-
-# Configure logging
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 get_data_handler()
 
@@ -18,7 +13,7 @@ def create_app() -> FastAPI:
 
     :return FastAPI: The configured FastAPI application
     """
-    app = FastAPI(
+    app: FastAPI = FastAPI(
         title="Country Information API",
         description="An API for retrieving information about countries",
         version="1.0.0",
@@ -34,7 +29,7 @@ def create_app() -> FastAPI:
     )
 
     # Include routes
-    prefix = "/api"
+    prefix: str = "/api"
     app.include_router(all_countries.router, prefix=prefix, tags=["Countries"])
     app.include_router(random_country.router, prefix=prefix, tags=["Countries"])
     app.include_router(search_country.router, prefix=prefix, tags=["Countries"])
@@ -42,4 +37,4 @@ def create_app() -> FastAPI:
     return app
 
 
-app = create_app()
+app: FastAPI = create_app()

@@ -7,7 +7,7 @@ from api.data.data_handler import DataHandler
 from api.data.instance import get_data_handler
 from api.models.country import Country
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 @router.get(
@@ -38,16 +38,16 @@ router = APIRouter()
 async def search_country(
     data_handler: DataHandler = Depends(get_data_handler),
     query_input: str = Query(None, description="The search query (country name or code)", example="United States"),
-) -> Dict[str, Any]:
+) -> JSONResponse:
     """
     Search for a country by name or code.
 
     :param DataHandler data_handler: The data handler instance (injected by FastAPI)
     :param str query: The search query (country name or code). Defaults to "France".
-    :return Dict[str, Any]: A dictionary containing a success message and information about the matched country.
+    :return JSONResponse: A JSON response containing a success message and information about the matched country.
     :raises HTTPException: If no country is found matching the query.
     """
-    country = data_handler.search_country(query_input)
+    country: Country | None = data_handler.search_country(query_input)
     if country is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f" ❌ No country found matching '{query_input}'."

@@ -1,17 +1,19 @@
+import os
 import random
 import sys
 from pathlib import Path
-from typing import Optional
 
 project_root = str(Path(__file__).resolve().parent.parent)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+
 import requests
 import streamlit as st
-from models.question import QuizQuestion
 
 from api.models.country import Country
+
+from .models.question import QuizQuestion
 
 
 class CapitalQuizGame:
@@ -21,15 +23,15 @@ class CapitalQuizGame:
 
     def __init__(
         self,
-        api_host: str = "0.0.0.0",
-        api_port: int = 8000,
+        api_host: str,
+        api_port: int,
         num_questions: int = 5,
-    ):
+    ) -> None:
         """
         Initialize the CapitalQuizGame.
 
-        :param str api_host: The host address of the API server. Defaults to "0.0.0.0".
-        :param int api_port: The port number of the API server. Defaults to 8000.
+        :param str api_host: The host address of the API server.
+        :param int api_port: The port number of the API server.
         :param int num_questions: The number of questions in the quiz. Defaults to 5.
         """
         self.api_base_url = f"http://{api_host}:{api_port}/api"
@@ -117,7 +119,7 @@ class CapitalQuizGame:
         with css_path.open("r") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-    def initialize_game_state(self):
+    def initialize_game_state(self) -> None:
         """
         Initialize the game state variables in session state.
         """
@@ -275,14 +277,11 @@ class CapitalQuizGame:
             col2.markdown("</div>", unsafe_allow_html=True)
 
 
-def main(api_host: Optional[str] = None, api_port: Optional[int] = None) -> None:
+def main() -> None:
     """
     Main function to initialize and launch the Capital Quiz Game.
-
-    :param api_host: Optional host for the API. If not provided, defaults to "0.0.0.0".
-    :param api_port: Optional port for the API. If not provided, defaults to 8000.
     """
-    game = CapitalQuizGame(api_host=api_host or "0.0.0.0", api_port=api_port or 8000)
+    game = CapitalQuizGame(api_host=os.environ["api_host"], api_port=os.environ["api_port"])
     game.launch()
 
 

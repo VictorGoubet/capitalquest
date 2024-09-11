@@ -7,7 +7,7 @@ from api.data.data_handler import DataHandler
 from api.data.instance import get_data_handler
 from api.models.country import Country
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 @router.get(
@@ -35,15 +35,15 @@ router = APIRouter()
     },
     tags=["Countries"],
 )
-async def get_all_countries(data_handler: DataHandler = Depends(get_data_handler)) -> Dict[str, Any]:
+async def get_all_countries(data_handler: DataHandler = Depends(get_data_handler)) -> JSONResponse:
     """
     Retrieve all countries from the database.
 
     :param DataHandler data_handler: The data handler instance (injected by FastAPI)
-    :return Dict[str, Any]: A dictionary containing a success message and a list of all countries.
+    :return JSONResponse: A JSON response containing a success message and a list of all countries.
     :raises HTTPException: If no countries are found in the database.
     """
-    all_countries = data_handler.get_all_countries()
+    all_countries: List[Country] = data_handler.get_all_countries()
     if not all_countries:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=" ❌ No countries found in the database.")
 

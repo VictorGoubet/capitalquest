@@ -1,159 +1,205 @@
-import multiprocessing
+import logging
+import os
 import signal
 import subprocess
 import sys
-from enum import Enum
-from typing import Any, Dict, List
+from multiprocessing import Process
+from typing import Callable, List, Optional
 
 import click
 import uvicorn
-from pydantic import BaseModel, ConfigDict
+
+# Constants for default values
+DEFAULT_API_HOST: str = "localhost"
+DEFAULT_API_PORT: int = 8000
+DEFAULT_FRONT_HOST: str = "localhost"
+DEFAULT_FRONT_PORT: int = 8051
+DEFAULT_ENV: str = "dev"
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="\033[32m%(levelname)s\033[0m:     %(message)s")
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Environment(str, Enum):
-    DEV = "dev"
-    PROD = "prod"
+def set_log_level(env: str) -> None:
+    """
+    Set the log level based on the environment.
+
+    :param str env: The current environment (dev or prod)
+    """
+    log_level: int = logging.DEBUG if env == "dev" else logging.INFO
+    logging.getLogger().setLevel(log_level)
+    logger.setLevel(log_level)
 
 
-class Config(BaseModel):
-    """Configuration for the application components."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    app: str
-    api_host: str
-    api_port: int
-    front_host: str
-    front_port: int
-    reload: bool = False
-    workers: int = 1
-    log_level: str = "info"
-
-
-def run_api(config: Config) -> None:
+def run_api() -> None:
     """
     Run the API component.
-
-    :param Config config: The configuration for the API
     """
-    click.echo(f" ✅ Starting API on http://{config.api_host}:{config.api_port}")
-    api_config = {k: v for k, v in config.model_dump().items() if not k.startswith("front_") and v is not None}
-    api_config["host"] = api_config.pop("api_host")
-    api_config["port"] = api_config.pop("api_port")
-    uvicorn.run(**api_config)
+    api_port: str = os.environ["api_port"]
+    api_host: str = os.environ["api_host"]
+    env: str = os.environ["environment"]
+    log_level: str = "debug" if env == "dev" else "info"
+
+    logger.info(f" ✅ Starting API on http://{api_host}:{api_port}")
+    uvicorn.run(app="api.app:app", port=int(api_port), host=api_host, log_level=log_level)
 
 
-def run_front(config: Config) -> None:
+def run_front() -> None:
     """
     Run the front-end component.
-
-    :param Config config: The configuration for the front-end
     """
-    click.echo(f" ✅ Starting front-end on http://{config.front_host}:{config.front_port}")
-    streamlit_command = [
+    front_port: str = os.environ["front_port"]
+    front_host: str = os.environ["front_host"]
+    logger.info(f" ✅ Starting front-end on http://{front_host}:{front_port}")
+    streamlit_command: List[str] = [
         "streamlit",
         "run",
         "front/app.py",
         "--server.port",
-        str(config.front_port),
+        str(front_port),
         "--server.address",
-        config.front_host,
-        "--",
-        "--api_host",
-        config.api_host,
-        "--api_port",
-        str(config.api_port),
+        front_host,
+        "--logger.level",
+        "info",
     ]
     subprocess.run(streamlit_command)
 
 
+def set_environment_variable(key: str, value: Optional[str], default: str) -> None:
+    """
+    Set an environment variable with a fallback to a default value.
+    """
+    os.environ[key] = str(value if value is not None else os.getenv(key, default))
+
+
+def set_environment_variables(
+    api_host: Optional[str],
+    api_port: Optional[int],
+    front_host: Optional[str],
+    front_port: Optional[int],
+    env: Optional[str],
+) -> None:
+    """
+    Set environment variables for the application.
+
+    This function sets the environment variables for the API host and port,
+    front-end host and port, and the environment type. If any of the parameters
+    are None, it falls back to environment variables or default values.
+
+    :param Optional[str] api_host: The host for the API server, defaults to '0.0.0.0' if not set
+    :param Optional[int] api_port: The port for the API server, defaults to '8000' if not set
+    :param Optional[str] front_host: The host for the front-end server, defaults to '0.0.0.0' if not set
+    :param Optional[int] front_port: The port for the front-end server, defaults to '8051' if not set
+    :param Optional[str] env: The environment type (dev or prod), defaults to 'dev' if not set
+    """
+    set_environment_variable("api_host", api_host, DEFAULT_API_HOST)
+    set_environment_variable("api_port", api_port, DEFAULT_API_PORT)
+    set_environment_variable("front_host", front_host, DEFAULT_FRONT_HOST)
+    set_environment_variable("front_port", front_port, DEFAULT_FRONT_PORT)
+    set_environment_variable("environment", env, DEFAULT_ENV)
+    set_log_level(os.environ["environment"])
+
+
 @click.command()
-@click.option(
-    "--env",
-    type=click.Choice([env.value for env in Environment]),
-    default=Environment.DEV.value,
-    help="Specify the environment (dev or prod)",
-)
-@click.option("--api-host", default="0.0.0.0", help="The host to bind the API server to")
-@click.option("--api-port", default=8000, help="The port to bind the API server to")
-@click.option("--front-host", default="0.0.0.0", help="The host to bind the front-end server to")
-@click.option("--front-port", default=8501, help="The port to bind the front-end server to")
-@click.option(
-    "--component",
-    type=click.Choice(["api", "front", "both"]),
-    default="both",
-    help="Specify which component to run (api, front, or both)",
-)
+@click.option("--env", type=click.Choice(["dev", "prod", None]), default=None, help="Specify the environment")
+@click.option("--api-host", type=Optional[str], default=None, help="The host to bind the API server to")
+@click.option("--api-port", type=Optional[int], default=None, help="The port to bind the API server to")
+@click.option("--front-host", default=None, help="The host to bind the front-end server to")
+@click.option("--front-port", default=None, help="The port to bind the front-end server to")
+@click.option("--component", type=click.Choice(["api", "front", "both"]), default="both", help="The component to run")
 def run_app(
-    env: str,
-    api_host: str,
-    api_port: int,
-    front_host: str,
-    front_port: int,
+    env: Optional[str],
+    api_host: Optional[str],
+    api_port: Optional[int],
+    front_host: Optional[str],
+    front_port: Optional[int],
     component: str,
 ) -> None:
     """
     Run the application components (API, front-end, or both) in either development or production mode.
 
-    :param str env: The environment to run the application in (dev or prod)
-    :param str api_host: The host to bind the API server to
-    :param int api_port: The port to bind the API server to
-    :param str front_host: The host to bind the front-end server to
-    :param int front_port: The port to bind the front-end server to
+    :param Optional[str] env: The environment to run the application in (dev or prod)
+    :param Optional[str] api_host: The host to bind the API server to
+    :param Optional[int] api_port: The port to bind the API server to
+    :param Optional[str] front_host: The host to bind the front-end server to
+    :param Optional[int] front_port: The port to bind the front-end server to
     :param str component: The component to run (api, front, or both)
     """
-    common_config: Dict[str, Any] = {
-        "app": "api.app:app",
-        "api_host": api_host,
-        "api_port": api_port,
-        "front_host": front_host,
-        "front_port": front_port,
-    }
+    set_environment_variables(api_host, api_port, front_host, front_port, env)
+    processes: List[Process] = start_components(component)
+    setup_signal_handlers(processes)
+    wait_for_processes(processes)
 
-    if env == Environment.DEV.value:
-        click.echo(" 💡 Starting application in development mode")
-        config = Config(reload=True, workers=1, log_level="debug", **common_config)
-    else:
-        click.echo(" 💡 Starting application in production mode")
-        num_workers = multiprocessing.cpu_count()
-        config = Config(workers=num_workers, log_level="info", **common_config)
 
-    processes: List[multiprocessing.Process] = []
+def start_components(component: str) -> List[Process]:
+    """
+    Start the specified components of the application.
 
-    def run_component(target_func: callable, config: Config) -> None:
-        process = multiprocessing.Process(target=target_func, args=(config,))
+    :param str component: The component to run (api, front, or both)
+    :return List[Process]: A list of started processes
+    """
+    processes: List[Process] = []
+
+    def run_component(target_func: Callable[[], None]) -> None:
+        process: Process = Process(target=target_func)
         processes.append(process)
         process.start()
 
     if component == "api":
-        run_component(run_api, config)
+        run_component(run_api)
     elif component == "front":
-        run_component(run_front, config)
+        run_component(run_front)
     else:  # component == "both"
-        run_component(run_api, config)
-        run_component(run_front, config)
+        run_component(run_api)
+        run_component(run_front)
 
-    click.echo(" 💡 Press CTRL+C to quit")
+    logger.info(" 💡 Press CTRL+C to quit")
+    return processes
 
-    def signal_handler(signum, frame):
-        click.echo("\n ⚠️ Stopping all processes...")
-        for process in processes:
-            if process.is_alive():
-                process.terminate()
 
-        for process in processes:
-            process.join(timeout=5)
-            if process.is_alive():
-                click.echo(f" ❌ Process {process.pid} did not terminate gracefully. Killing it.")
-                process.kill()
-                process.join()
+def setup_signal_handlers(processes: List[Process]) -> None:
+    """
+    Set up signal handlers for graceful shutdown.
 
-        click.echo(" ✅ All processes stopped")
-        sys.exit(0)
+    :param List[Process] processes: A list of running processes
+    """
+
+    def signal_handler(signum: int, frame: Optional[object]) -> None:
+        stop_processes(processes)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+
+def stop_processes(processes: List[Process]) -> None:
+    """
+    Stop all running processes.
+
+    :param List[Process] processes: A list of running processes
+    """
+    logger.warning("\n ⚠️ Stopping all processes...")
+    for process in processes:
+        if process.is_alive():
+            process.terminate()
+
+    for process in processes:
+        process.join(timeout=5)
+        if process.is_alive():
+            logger.error(f" ❌ Process {process.pid} did not terminate gracefully. Killing it.")
+            process.kill()
+            process.join()
+
+    logger.info(" ✅ All processes stopped")
+    sys.exit(0)
+
+
+def wait_for_processes(processes: List[Process]) -> None:
+    """
+    Wait for all processes to complete.
+
+    :param List[Process] processes: A list of running processes
+    """
     for process in processes:
         process.join()
 

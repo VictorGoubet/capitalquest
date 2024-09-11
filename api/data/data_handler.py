@@ -25,7 +25,7 @@ class DataHandler(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, **data):
+    def __init__(self, **data: dict) -> None:
         """
         Initialize the DataHandler, load countries, and create indexes.
 
@@ -41,7 +41,7 @@ class DataHandler(BaseModel):
         Load countries from the CSV file and convert them to Country objects.
         Skips countries with missing name or capital.
         """
-        countries = []
+        countries: list[Country] = []
         try:
             with open(self._csv_file_path, "r", encoding="utf-8") as file:
                 csv_reader = csv.DictReader(file)
@@ -49,7 +49,7 @@ class DataHandler(BaseModel):
                     if not row.get("Country") or not row.get("Capital/Major City"):
                         continue
                     try:
-                        country = Country.model_validate(row)
+                        country: Country = Country.model_validate(row)
                         countries.append(country)
                     except ValueError as e:
                         logger.error(f" ❌ Error parsing country: {e}")
