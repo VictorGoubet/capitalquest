@@ -70,7 +70,7 @@ jobs:
     steps:
       - name: Deploy to Production
         run: |
-          curl -X POST https://api.render.com/deploy/srv-crhh7u3v2p9s73fkr6kg?key=qD1tH5V8q_Q
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
       
       - name: Deployment Status
         run: |
