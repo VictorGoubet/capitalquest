@@ -11,6 +11,12 @@
   <a href="https://capitalquest-nvde.onrender.com/">· Play here ·</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/VictorGoubet/capitalquest/actions/workflows/ci.yml">
+    <img src="https://github.com/VictorGoubet/capitalquest/actions/workflows/ci.yml/badge.svg" alt="CI Pipeline" title="Status of the last deployment on Production environment">
+  </a>
+</p>
+
 ## Table of Contents 📙
 - [Play the Game](#play-the-game-)
 - [Installation for Developers](#installation-for-developers-)
