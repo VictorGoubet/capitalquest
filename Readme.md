@@ -8,7 +8,7 @@
 
 <p align="center">
   Test your knowledge of world capitals with this interactive quiz game!<br>
-  <a href="#play-the-game-">· Play here (soon) ·</a>
+  <a href="#play-the-game-">· Play here ·</a>
 </p>
 
 ## Table of Contents 📙
@@ -22,7 +22,7 @@
 
 ## Play the Game 🌍
 
-Play Capital Quest [here][game-url] (soon)
+Play Capital Quest [here][game-url]
 
 ## Installation for Developers 🛠️
 
@@ -74,7 +74,7 @@ If you want to run Capital Quest locally, follow these steps:
 
 4. Open your browser and navigate to `http://localhost:8051` (or your custom front-end port)
 
-### Option 2: Docker (soon) 🐳
+### Option 2: Docker 🐳
 
 A Docker image is available for easy setup:
 
@@ -92,4 +92,4 @@ A Docker image is available for easy setup:
 
 ---
 
-[game-url]: https://capital-quest.com
+[game-url]: https://capitalquest-nvde.onrender.com/

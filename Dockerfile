@@ -13,9 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make port 8051 available to the world outside this container
 EXPOSE 8051
 
-# Define environment variable
+# Define environment variables
 ENV PYTHONUNBUFFERED=1
 ENV environment=prod
+# Add this line to specify the port for auto-deploy on some servers
+ENV PORT=8051 
 
 # Run app.py when the container launches
 CMD ["python", "launch.py", "--env", "prod", "--component", "both", "--front-host", "0.0.0.0"]
