@@ -58,3 +58,19 @@ jobs:
 
       - name: Push Docker image
         run: docker push victorgoubet/capitalquest:latest
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: Production
+      url: https://capitalquest-nvde.onrender.com/
+
+    steps:
+      - name: Deploy to Production
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-crhh7u3v2p9s73fkr6kg?key=qD1tH5V8q_Q
+      
+      - name: Deployment Status
+        run: |
+          echo "💡 Deployment triggered. Check Render dashboard for status."

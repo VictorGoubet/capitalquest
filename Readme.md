@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="#play-the-game-">
+  <a href="https://capitalquest-nvde.onrender.com/">
     <img src="assets/logo.png" alt="Capital Quest Logo" width="200">
   </a>
 </p>
@@ -8,7 +8,7 @@
 
 <p align="center">
   Test your knowledge of world capitals with this interactive quiz game!<br>
-  <a href="#play-the-game-">· Play here ·</a>
+  <a href="https://capitalquest-nvde.onrender.com/">· Play here ·</a>
 </p>
 
 ## Table of Contents 📙
