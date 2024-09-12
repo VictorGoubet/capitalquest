@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.10.12-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -18,4 +18,4 @@ ENV PYTHONUNBUFFERED=1
 ENV environment=prod
 
 # Run app.py when the container launches
-CMD ["python", "launch.py", "--env", "prod", "--component", "both"]
+CMD ["python", "launch.py", "--env", "prod", "--component", "both", "--front-host", "0.0.0.0"]

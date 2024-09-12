@@ -30,7 +30,7 @@ If you want to run Capital Quest locally, follow these steps:
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 - Git
 
 ### Option 1: Git Clone 🐙
