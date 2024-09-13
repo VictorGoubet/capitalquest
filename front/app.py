@@ -7,7 +7,6 @@ project_root = str(Path(__file__).resolve().parent.parent)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-
 import requests
 import streamlit as st
 from dotenv import load_dotenv
@@ -27,17 +26,15 @@ class CapitalQuizGame:
         self,
         api_host: str,
         api_port: int,
-        num_questions: int = 5,
     ) -> None:
         """
         Initialize the CapitalQuizGame.
 
         :param str api_host: The host address of the API server.
         :param int api_port: The port number of the API server.
-        :param int num_questions: The number of questions in the quiz. Defaults to 5.
         """
         self.api_base_url = f"http://{api_host}:{api_port}/api"
-        self.num_questions = num_questions
+        self.num_questions = 10  # Default value
 
     def get_random_country(self) -> Country:
         """
@@ -95,19 +92,28 @@ class CapitalQuizGame:
         """
         Launch and manage the game flow.
         """
-        st.set_page_config(page_title="Capital Quest", page_icon="🌍", layout="wide")
+        st.set_page_config(page_title="Capital Quest", page_icon="assets/logo.png", layout="wide")
         self.load_css()  # Load external CSS
+
+        self.display_logo()
 
         if "game_state" not in st.session_state:
             self.initialize_game_state()
 
         if st.session_state.game_state == "start":
-            st.markdown("<h1 style='text-align: center;'>🌍 Capital Quest</h1>", unsafe_allow_html=True)
             self._handle_start_state()
         elif st.session_state.game_state == "playing":
             self._handle_playing_state()
         elif st.session_state.game_state == "end":
             self._handle_end_state()
+
+    def display_logo(self) -> None:
+        """
+        Display the game logo.
+        """
+        _, col2, _ = st.columns([6, 1, 6])
+        with col2:
+            st.image("assets/logo.png", width=180)  # Centered logo
 
     def load_css(self) -> None:
         """
@@ -131,6 +137,7 @@ class CapitalQuizGame:
         st.session_state.answer_submitted = False
         st.session_state.result_message = None
         st.session_state.score = 0
+        st.session_state.num_questions = 10  # Default value
 
     def _handle_start_state(self) -> None:
         """
@@ -144,6 +151,7 @@ class CapitalQuizGame:
         with col2:
             _, inner_col, _ = st.columns([1, 2, 1])
             with inner_col:
+                st.session_state.num_questions = st.slider("Number of questions", min_value=5, max_value=100, value=10)
                 if st.button("Start Game", use_container_width=True):
                     st.session_state.game_state = "playing"
                     st.session_state.current_quiz_question = self.generate_question()
@@ -157,7 +165,7 @@ class CapitalQuizGame:
         """
         Handle the playing state of the game.
         """
-        if st.session_state.question_number <= self.num_questions:
+        if st.session_state.question_number <= st.session_state.num_questions:
             self._display_question()
             self._process_answer()
 
@@ -175,7 +183,7 @@ class CapitalQuizGame:
             st.session_state.current_quiz_question = self.generate_question()
 
         st.markdown(
-            f"<h3 style='text-align: center;'>Question {st.session_state.question_number}/{self.num_questions}</h3>",
+            f"<h3 style='text-align: center;'>Question {st.session_state.question_number}/{st.session_state.num_questions}</h3>",
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -246,7 +254,7 @@ class CapitalQuizGame:
         st.session_state.user_answer = None
         st.session_state.current_quiz_question = None
 
-        if st.session_state.question_number > self.num_questions:
+        if st.session_state.question_number > st.session_state.num_questions:
             st.session_state.game_state = "end"
             st.rerun()
 
@@ -258,10 +266,10 @@ class CapitalQuizGame:
         """
         st.markdown("<h2 style='text-align: center;'>🎉 Quiz Completed!</h2>", unsafe_allow_html=True)
         st.markdown(
-            f"<p style='text-align: center; font-size: 20px;'>Your final score: <b>{st.session_state.score}/{self.num_questions}</b></p>",
+            f"<p style='text-align: center; font-size: 20px;'>Your final score: <b>{st.session_state.score}/{st.session_state.num_questions}</b></p>",
             unsafe_allow_html=True,
         )
-        accuracy = (st.session_state.score / self.num_questions) * 100
+        accuracy = (st.session_state.score / st.session_state.num_questions) * 100
         st.markdown(f"<p style='text-align: center;'>Accuracy: <b>{accuracy:.2f}%</b></p>", unsafe_allow_html=True)
 
         _, col2, _ = st.columns([1, 1, 1])
