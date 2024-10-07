@@ -111,9 +111,9 @@ class CapitalQuizGame:
         """
         Display the game logo.
         """
-        _, col2, _ = st.columns([6, 1, 6])
+        _, col2, _ = st.columns([1, 1, 1])
         with col2:
-            st.image("assets/logo.png", width=180)  # Centered logo
+            st.image("assets/logo.png")
 
     def load_css(self) -> None:
         """
@@ -143,23 +143,21 @@ class CapitalQuizGame:
         """
         Handle the start state of the game.
         """
-        st.write(
+        st.markdown(
             "<p style='text-align: center;'>Test your knowledge of world capitals.</p>",
             unsafe_allow_html=True,
         )
         _, col2, _ = st.columns([1, 1, 1])
         with col2:
-            _, inner_col, _ = st.columns([1, 2, 1])
-            with inner_col:
-                st.session_state.num_questions = st.slider("Number of questions", min_value=5, max_value=100, value=10)
-                if st.button("Start Game", use_container_width=True):
-                    st.session_state.game_state = "playing"
-                    st.session_state.current_quiz_question = self.generate_question()
-                    st.session_state.question_number = 1
-                    st.session_state.answer_submitted = False
-                    st.session_state.result_message = None
-                    st.session_state.score = 0
-                    st.rerun()
+            st.session_state.num_questions = st.slider("Number of questions", min_value=5, max_value=100, value=10)
+            if st.button("Start Game", use_container_width=True):
+                st.session_state.game_state = "playing"
+                st.session_state.current_quiz_question = self.generate_question()
+                st.session_state.question_number = 1
+                st.session_state.answer_submitted = False
+                st.session_state.result_message = None
+                st.session_state.score = 0
+                st.rerun()
 
     def _handle_playing_state(self) -> None:
         """
@@ -207,25 +205,23 @@ class CapitalQuizGame:
         """
         _, col2, _ = st.columns([1, 1, 1])
         with col2:
-            _, col2, _ = st.columns([1, 2, 1])
-            with col2:
-                submit_button = st.button(
-                    "Submit Answer", disabled=st.session_state.answer_submitted, use_container_width=True
-                )
-                if submit_button:
-                    is_correct = self.check_answer(st.session_state.user_answer)
-                    self._display_result(is_correct)
-                    st.session_state.answer_submitted = True
-                    st.session_state.show_next_button = True
-                    st.rerun()
+            submit_button = st.button(
+                "Submit Answer", disabled=st.session_state.answer_submitted, use_container_width=True
+            )
+            if submit_button:
+                is_correct = self.check_answer(st.session_state.user_answer)
+                self._display_result(is_correct)
+                st.session_state.answer_submitted = True
+                st.session_state.show_next_button = True
+                st.rerun()
 
-                if st.session_state.show_next_button:
-                    if st.button("Next Question", use_container_width=True):
-                        self._update_game_state()
-                        st.session_state.show_next_button = False
-                        st.session_state.answer_submitted = False
-                        st.session_state.result_message = None
-                        st.rerun()
+            if st.session_state.show_next_button:
+                if st.button("Next Question", use_container_width=True):
+                    self._update_game_state()
+                    st.session_state.show_next_button = False
+                    st.session_state.answer_submitted = False
+                    st.session_state.result_message = None
+                    st.rerun()
 
     def _display_result(self, is_correct: bool) -> None:
         """
@@ -274,7 +270,6 @@ class CapitalQuizGame:
 
         _, col2, _ = st.columns([1, 1, 1])
         with col2:
-            col2.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
             if st.button("Home", use_container_width=True):
                 self.reset_game()
                 st.session_state.game_state = "start"
@@ -284,7 +279,6 @@ class CapitalQuizGame:
                 st.session_state.result_message = None
                 st.session_state.score = 0
                 st.rerun()
-            col2.markdown("</div>", unsafe_allow_html=True)
 
 
 def main() -> None:
